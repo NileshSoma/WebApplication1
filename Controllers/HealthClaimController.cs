@@ -18,21 +18,25 @@ namespace WebApplication1.Controllers
     [ApiController]
     public class HealthClaimController : ControllerBase
     {
+        private readonly IMembersRepository _IMembersRepository;
+        private readonly IClaimsRepository _IClaimsRepository;
+        public HealthClaimController(IMembersRepository membersRepository, IClaimsRepository claimsRepository)
+        {
+            this._IMembersRepository = membersRepository;
+            this._IClaimsRepository = claimsRepository;
+        }
 
         [HttpGet]
         [Route("[action]")]
         [Route("api/HealthClaim/GetClaims")]
         public IActionResult GetClaims()
         {
-
-            Claims obj = new Claims();
-            Members objmembers = new Members();
             try
             {
-                var item = from Claims in obj.BindClims()
-                           join Memebers in objmembers.BindMembers()
+                var item = from Claims in _IClaimsRepository.BindClims()
+                           join Memebers in _IMembersRepository.BindMembers()
                            on Claims.MemberID equals Memebers.MemberID
-                           select new { Claims.MemberID, Claims.ClaimDate, Claims.claimammount, Memebers.FirstName, Memebers.LastName };
+                           select new { Claims.MemberID, Memebers.FirstName, Memebers.LastName, Claims.ClaimDate, Claims.claimammount };
                 if (item != null)
                 {
                     return Ok(item);
@@ -49,20 +53,17 @@ namespace WebApplication1.Controllers
             return NotFound("Not found");
         }
 
-        [HttpGet]        
+        [HttpPost]
         [Route("/GetByClaimDate/{ClaimDate}")]
         public IActionResult GetByClaimDate(string ClaimDate)
         {
-
-            Claims obj = new Claims();
-            Members objmembers = new Members();
             try
             {
-                var item = from Claims in obj.BindClims()
-                           join Memebers in objmembers.BindMembers()
+                var item = from Claims in _IClaimsRepository.BindClims()
+                           join Memebers in _IMembersRepository.BindMembers()
                            on Claims.MemberID equals Memebers.MemberID
                            where Claims.ClaimDate == Convert.ToDateTime(ClaimDate)
-                           select new { Claims.MemberID, Claims.ClaimDate, Claims.claimammount, Memebers.FirstName, Memebers.LastName };
+                           select new { Claims.MemberID, Memebers.FirstName, Memebers.LastName, Claims.ClaimDate, Claims.claimammount  };
                 if (item != null)
                 {
                     return Ok(item);
